@@ -38,6 +38,10 @@ const config: Config = {
           '0%': { transform: 'translateY(-100%)' },
           '100%': { transform: 'translateY(100%)' },
         },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0) rotate(-1deg)' },
+          '50%': { transform: 'translateY(-20px) rotate(1deg)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.3s ease-out forwards',

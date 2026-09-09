@@ -37,15 +37,10 @@ html, body {
 
 /* Leaflet Map Overrides */
 .leaflet-container {
-  background: var(--orca-bg) !important;
+  background: #f4f3f0 !important; /* Esri Topo background color */
   font-family: inherit;
 }
-.leaflet-control-attribution {
-  display: none !important;
-}
-.leaflet-tile-pane { 
-  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); 
-}
+/* Attribution is now displayed per user request */
 
 /* Utility Animations */
 @keyframes pulseLive {
