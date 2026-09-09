@@ -240,7 +240,7 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
                 padding:       '7px 14px',
                 fontSize:      12,
                 fontWeight:    600,
-                fontFamily:    "-apple-system,'SF Pro Display','Inter',sans-serif",
+                fontFamily: 'var(--font-space-grotesk), sans-serif',
                 display:       'flex', alignItems: 'center', gap: 5,
                 cursor:        'pointer',
                 boxShadow:     '0 2px 12px rgba(0,0,0,0.14)',
@@ -359,7 +359,7 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
                   <span style={{
                     fontSize: 20, fontWeight: 700, color: '#1c1c1e',
-                    fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif",
+                    fontFamily: 'var(--font-space-grotesk), sans-serif',
                   }}>
                     {selectedZone.name || selectedZone.code}
                   </span>
@@ -367,28 +367,28 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
                     background: cfg.light, color: cfg.color,
                     borderRadius: 7, padding: '2px 9px',
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.4px',
-                    fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif",
+                    fontFamily: 'var(--font-space-grotesk), sans-serif',
                   }}>{cfg.label}</span>
                 </div>
 
                 {/* Quick stats */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <span style={{ fontSize: 13, color: '#636366', fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif" }}>
+                  <span style={{ fontSize: 13, color: '#636366', fontFamily: 'var(--font-space-grotesk), sans-serif' }}>
                     Risk&nbsp;
                     <strong style={{ color: cfg.color }}>{selectedZone.riskScore}/100</strong>
                   </span>
                   <span style={{ width: 1, height: 13, background: '#D1D1D6', display: 'inline-block' }}/>
-                  <span style={{ fontSize: 13, color: '#636366', fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif" }}>
+                  <span style={{ fontSize: 13, color: '#636366', fontFamily: 'var(--font-space-grotesk), sans-serif' }}>
                     Waves&nbsp;
                     <strong style={{ color: '#1c1c1e' }}>{selectedZone.conditions.waveHeight}</strong>
                   </span>
                   <span style={{ width: 1, height: 13, background: '#D1D1D6', display: 'inline-block' }}/>
-                  <span style={{ fontSize: 13, color: '#636366', fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif" }}>
+                  <span style={{ fontSize: 13, color: '#636366', fontFamily: 'var(--font-space-grotesk), sans-serif' }}>
                     Depth&nbsp;
                     <strong style={{ color: '#1c1c1e' }}>{selectedZone.depthMeters}m</strong>
                   </span>
                   <span style={{ width: 1, height: 13, background: '#D1D1D6', display: 'inline-block' }}/>
-                  <span style={{ fontSize: 13, color: '#636366', fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif" }}>
+                  <span style={{ fontSize: 13, color: '#636366', fontFamily: 'var(--font-space-grotesk), sans-serif' }}>
                     Confidence&nbsp;
                     <strong style={{ color: '#1c1c1e' }}>{selectedZone.confidence}</strong>
                   </span>
@@ -412,7 +412,7 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
               <div style={{ padding: '8px 20px 0' }}>
                 <p style={{
                   margin: 0, color: '#636366', fontSize: 13, lineHeight: 1.55,
-                  fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif",
+                  fontFamily: 'var(--font-space-grotesk), sans-serif',
                 }}>
                   {selectedZone.recommendation}
                 </p>
@@ -434,8 +434,8 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
                 { label: 'PFZ',      value: selectedZone.pfzAdvisoryStatus },
               ].map(({ label, value }) => (
                 <div key={label}>
-                  <div style={{ fontSize: 10, color: '#8E8E93', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif" }}>{label}</div>
-                  <div style={{ fontSize: 13, color: '#1c1c1e', fontWeight: 600, marginTop: 2, fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif" }}>{value || '—'}</div>
+                  <div style={{ fontSize: 10, color: '#8E8E93', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-space-grotesk), sans-serif' }}>{label}</div>
+                  <div style={{ fontSize: 13, color: '#1c1c1e', fontWeight: 600, marginTop: 2, fontFamily: 'var(--font-space-grotesk), sans-serif' }}>{value || '—'}</div>
                 </div>
               ))}
             </div>
@@ -449,7 +449,7 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
                   border: 'none', borderRadius: 13, padding: '11px 0',
                   fontSize: 14, fontWeight: 600, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif",
+                  fontFamily: 'var(--font-space-grotesk), sans-serif',
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -467,7 +467,7 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
                   border: 'none', borderRadius: 13, padding: '11px 0',
                   fontSize: 14, fontWeight: 600, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif",
+                  fontFamily: 'var(--font-space-grotesk), sans-serif',
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -495,7 +495,7 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
           padding: '9px 14px', boxShadow: '0 2px 12px rgba(0,0,0,0.13)',
           backdropFilter: 'blur(12px)',
         }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 6, fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#8E8E93', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 6, fontFamily: 'var(--font-space-grotesk), sans-serif' }}>
             Risk Level
           </div>
           <div style={{ display: 'flex', gap: 14 }}>
@@ -507,7 +507,7 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
             ].map(({ color, label }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: color }}/>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#3a3a3c', fontFamily: "-apple-system,'SF Pro Display','Inter',sans-serif" }}>{label}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#3a3a3c', fontFamily: 'var(--font-space-grotesk), sans-serif' }}>{label}</span>
               </div>
             ))}
           </div>

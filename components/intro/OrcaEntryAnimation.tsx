@@ -259,7 +259,7 @@ export default function OrcaEntryAnimation({ onComplete }: OrcaEntryAnimationPro
               key={i}
               className="text-[4rem] md:text-[8rem] font-black text-white leading-none"
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: 'var(--font-space-grotesk), sans-serif',
                 textShadow: '0 0 40px rgba(24, 213, 208, 0.4)',
                 opacity: showBrand ? 1 : 0,
                 transform: showBrand ? 'translateY(0)' : 'translateY(40px)',

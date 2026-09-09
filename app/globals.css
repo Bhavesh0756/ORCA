@@ -24,7 +24,6 @@ html, body {
   padding: 0;
   background-color: var(--orca-bg);
   color: var(--orca-text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   height: 100vh;
   overflow: hidden;
 }
@@ -77,7 +76,7 @@ html, body {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   color: var(--orca-text);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
   padding: 8px 12px;
 }
 .orca-tooltip::before {

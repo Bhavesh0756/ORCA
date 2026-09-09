@@ -94,7 +94,7 @@ export default function EvidenceDrawer({ isOpen, onClose, evidence }: EvidenceDr
           ].map((row, i) => (
             <div key={i} className="flex items-start justify-between gap-4">
               <span className="text-[12px] font-medium shrink-0" style={{ color: '#7895A3' }}>{row.label}</span>
-              <span className="text-[13px] font-semibold text-right" style={{ color: row.color || '#F5FAFC', fontFamily: 'JetBrains Mono, monospace', opacity: 0.9 }}>
+              <span className="text-[13px] font-semibold text-right" style={{ color: row.color || '#F5FAFC', fontFamily: 'var(--font-ibm-plex-mono), monospace', opacity: 0.9 }}>
                 {row.value}
               </span>
             </div>

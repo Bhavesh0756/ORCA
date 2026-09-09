@@ -155,7 +155,7 @@ export const MarineMap: React.FC<MarineMapProps> = ({
                 background:${badgeBg};
                 border:1px solid rgba(255,255,255,0.15);
                 color:${badgeText};font-size:11px;font-weight:700;
-                font-family:'JetBrains Mono',monospace;
+                font-family:var(--font-ibm-plex-mono),monospace;
                 white-space:nowrap;
                 box-shadow:0 2px 8px rgba(0,0,0,0.5);
                 ${isCurrentSelected ? 'outline:2px solid rgba(0,229,255,0.7);outline-offset:2px;' : ''}
@@ -164,7 +164,7 @@ export const MarineMap: React.FC<MarineMapProps> = ({
                 ${zone.code} <span style="opacity:0.5;font-size:9px;">•</span> <span style="font-size:10px;opacity:0.9;">${statusShort}</span>
               </div>
               <span style="
-                font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;
+                font-size:9px;font-family:var(--font-ibm-plex-mono),monospace;font-weight:700;
                 color:#94A3B8;background:rgba(6,16,30,0.85);
                 padding:1px 5px;border-radius:4px;margin-top:2px;
                 border:1px solid rgba(27,63,110,0.5);

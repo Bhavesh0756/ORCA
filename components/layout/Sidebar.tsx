@@ -97,7 +97,7 @@ export default function Sidebar({ status = 'online' }: SidebarProps) {
             </div>
             <div className="flex items-center gap-1.5 bg-orca-bg/50 px-2 py-1 rounded-md border border-orca-border/30">
               <div className={`w-1.5 h-1.5 rounded-full ${status === 'online' ? 'bg-orca-safe shadow-[0_0_5px_rgba(25,217,138,0.5)]' : status === 'checking' ? 'bg-orca-warning' : 'bg-orca-risk'}`} />
-              <span className={`text-[9px] font-bold uppercase tracking-widest ${status === 'online' ? 'text-orca-safe' : status === 'checking' ? 'text-orca-warning' : 'text-orca-risk'}`}>
+              <span className={`font-mono text-[9px] font-bold uppercase tracking-widest ${status === 'online' ? 'text-orca-safe' : status === 'checking' ? 'text-orca-warning' : 'text-orca-risk'}`}>
                 {status}
               </span>
             </div>
@@ -108,7 +108,7 @@ export default function Sidebar({ status = 'online' }: SidebarProps) {
               <Database className="w-3.5 h-3.5 text-orca-muted" />
               <span className="text-xs text-orca-text/80">Data Stream</span>
             </div>
-            <span className={`text-[10px] font-medium uppercase tracking-wider ${status === 'online' ? 'text-orca-primary' : 'text-orca-muted'}`}>
+            <span className={`font-mono text-[10px] font-medium uppercase tracking-wider ${status === 'online' ? 'text-orca-primary' : 'text-orca-muted'}`}>
               {status === 'online' ? 'Connected' : 'Offline'}
             </span>
           </div>
@@ -132,7 +132,7 @@ export default function Sidebar({ status = 'online' }: SidebarProps) {
           <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
         </button>
         
-        <div className="mt-3 pt-3 border-t border-orca-border/40 px-3 flex items-center justify-between opacity-50 hover:opacity-100 transition-opacity duration-200">
+        <div className="font-mono mt-3 pt-3 border-t border-orca-border/40 px-3 flex items-center justify-between opacity-50 hover:opacity-100 transition-opacity duration-200">
           <span className="text-[9px] font-bold tracking-widest text-orca-text uppercase">ORCA v1.0</span>
           <span className="text-[9px] font-bold tracking-widest text-orca-text uppercase">SIH 2026</span>
         </div>
