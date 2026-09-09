@@ -1,326 +1,326 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
 interface OrcaEntryAnimationProps {
   onComplete: () => void;
 }
 
-/**
- * ORCA Cinematic Entry Animation
- *
- * The whale.png has a near-black underwater background.
- * By setting mix-blend-mode: screen on the whale image,
- * the dark background becomes optically transparent
- * (black + screen = nothing) while the bright whale body
- * pixels are preserved and composited over the scene.
- * The intro background color is tuned to match the darkest
- * pixels in the whale photo for a seamless blend.
- */
 export default function OrcaEntryAnimation({ onComplete }: OrcaEntryAnimationProps) {
-  const [phase, setPhase] = useState(0);
-
+  const [phase, setPhase] = useState<'init' | 'scan' | 'detect' | 'brand' | 'online' | 'exit'>('init');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mediaQuery.matches) { onComplete(); return; }
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      onComplete();
+      return;
+    }
 
-    // Phase timeline (per spec)
-    // 0 → scene
-    // 1 → ORCA wordmark emerges    (0.5s)
-    // 2 → whale swims in           (0.9s)
-    // 3 → MARINE ECOSYSTEM appears (2.6s)
-    // 4 → SYSTEM ONLINE            (3.0s)
-    // 5 → start exit transition    (3.2s)
-    // done                         (4.1s)
-    const timers = [
-      setTimeout(() => setPhase(1), 500),
-      setTimeout(() => setPhase(2), 900),
-      setTimeout(() => setPhase(3), 2600),
-      setTimeout(() => setPhase(4), 3000),
-      setTimeout(() => setPhase(5), 3200),
-      setTimeout(() => onComplete(), 4100),
-    ];
-    return () => timers.forEach(clearTimeout);
+    let isMounted = true;
+    let frameId: number;
+    let startTime: number | null = null;
+    
+    // Duration mapping for exact cinematic pacing
+    // 0-2000: Initial deep ocean
+    // 2000-4500: Sonar scan & topography
+    // 4500-7500: Whale (ORCA) detection
+    // 6500-9000: Brand reveal
+    // 8500-10000: System Online
+    // 10000-11500: Exit & Transition
+    const DURATION = 11500;
+
+    // Timeline driver
+    const tick = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      
+      if (elapsed > 2000 && elapsed <= 4500) setPhase(p => p !== 'scan' ? 'scan' : p);
+      if (elapsed > 4500 && elapsed <= 6500) setPhase(p => p !== 'detect' ? 'detect' : p);
+      if (elapsed > 6500 && elapsed <= 8500) setPhase(p => p !== 'brand' ? 'brand' : p);
+      if (elapsed > 8500 && elapsed <= 10000) setPhase(p => p !== 'online' ? 'online' : p);
+      if (elapsed > 10000 && elapsed <= DURATION) setPhase(p => p !== 'exit' ? 'exit' : p);
+      
+      if (elapsed >= DURATION) {
+        if (isMounted) onComplete();
+        return;
+      }
+      frameId = requestAnimationFrame(tick);
+    };
+    frameId = requestAnimationFrame(tick);
+
+    // --- CANVAS PARTICLES & SONAR GRID ---
+    const cvs = canvasRef.current;
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d', { alpha: false });
+    if (!ctx) return;
+    
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    cvs.width = w;
+    cvs.height = h;
+
+    const particles = Array.from({ length: 150 }).map(() => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      size: Math.random() * 2 + 0.5,
+      speedY: Math.random() * 0.4 + 0.1,
+      speedX: (Math.random() - 0.5) * 0.2,
+      opacity: Math.random() * 0.5 + 0.1
+    }));
+
+    const drawCanvas = (time: number) => {
+      if (!isMounted) return;
+      
+      // Clear with deep ocean color
+      ctx.fillStyle = '#010811';
+      ctx.fillRect(0, 0, w, h);
+
+      // Draw subtle topographic grid during scan/detect phases
+      const t = time - (startTime || time);
+      if (t > 2000 && t < 10500) {
+        const gridAlpha = t < 3000 ? (t - 2000) / 1000 : t > 9500 ? 1 - (t - 9500) / 1000 : 1;
+        ctx.strokeStyle = `rgba(24, 213, 208, ${0.03 * gridAlpha})`;
+        ctx.lineWidth = 1;
+        
+        // Perspective grid lines
+        const focalY = h * 0.3;
+        const spacing = 40;
+        ctx.beginPath();
+        for (let x = -w; x < w * 2; x += spacing) {
+          ctx.moveTo(x, h);
+          ctx.lineTo(w / 2 + (x - w / 2) * 0.1, focalY);
+        }
+        for (let y = h; y > focalY; y -= Math.pow((h - y) / h + 0.1, 2) * 100) {
+          ctx.moveTo(0, y);
+          ctx.lineTo(w, y);
+        }
+        ctx.stroke();
+
+        // Sonar sweep line
+        if (t > 2000 && t < 4500) {
+          const sweepY = focalY + ((t - 2000) / 2500) * (h - focalY);
+          ctx.fillStyle = `rgba(24, 213, 208, ${0.2 * gridAlpha})`;
+          ctx.fillRect(0, sweepY, w, 2);
+          ctx.fillStyle = `rgba(24, 213, 208, ${0.05 * gridAlpha})`;
+          ctx.fillRect(0, sweepY - 50, w, 50);
+        }
+      }
+
+      // Draw particles
+      particles.forEach(p => {
+        p.y -= p.speedY;
+        p.x += p.speedX;
+        if (p.y < 0) {
+          p.y = h;
+          p.x = Math.random() * w;
+        }
+        
+        // Parallax effect as phase progresses
+        const drift = t > 4000 ? (t - 4000) * 0.0005 * p.size : 0;
+        
+        ctx.beginPath();
+        ctx.arc(p.x - drift, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180, 230, 255, ${p.opacity * (t > 10000 ? 1 - (t - 10000) / 1000 : 1)})`;
+        ctx.fill();
+      });
+      
+      requestAnimationFrame(drawCanvas);
+    };
+    requestAnimationFrame(drawCanvas);
+
+    const handleResize = () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      if (cvs) {
+        cvs.width = w;
+        cvs.height = h;
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      isMounted = false;
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [onComplete]);
 
-  const exiting = phase >= 5;
+  // CSS classes mapped by timeline phase
+  const isExit = phase === 'exit';
+  const showScan = phase === 'scan' || phase === 'detect' || phase === 'brand' || phase === 'online';
+  const showDetect = phase === 'detect' || phase === 'brand' || phase === 'online';
+  const showBrand = phase === 'brand' || phase === 'online';
+  const showOnline = phase === 'online';
 
   return (
-    <>
-      {/* ── Keyframe styles ─────────────────────────────────── */}
-      <style>{`
-        /* Vertical bob — continuous while visible */
-        @keyframes orcaBob {
-          0%   { transform: translateY(0px)   rotate(-1.5deg); }
-          25%  { transform: translateY(-10px)  rotate(-0.5deg); }
-          50%  { transform: translateY(-18px)  rotate(0.5deg);  }
-          75%  { transform: translateY(-8px)   rotate(-0.8deg); }
-          100% { transform: translateY(0px)   rotate(-1.5deg); }
-        }
+    <div
+      className="fixed inset-0 z-[9999] overflow-hidden bg-[#010811] text-orca-text select-none"
+      style={{
+        opacity: isExit ? 0 : 1,
+        transition: 'opacity 1500ms cubic-bezier(0.4, 0, 0.2, 1)',
+        pointerEvents: isExit ? 'none' : 'auto'
+      }}
+    >
+      {/* 1. BACKGROUND CANVAS */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        style={{ filter: 'contrast(1.1) brightness(0.9)' }}
+      />
 
-        /* Horizontal swim in — from off-screen left to resting position */
-        @keyframes orcaSwimIn {
-          0%   { transform: translateX(-55vw); }
-          100% { transform: translateX(0);     }
-        }
-
-        /* Exit drift — whale glides up-right and fades */
-        @keyframes orcaExitDrift {
-          from { transform: translate(0, 0)    scale(1);    opacity: 1; }
-          to   { transform: translate(12vw, -8vh) scale(0.9); opacity: 0; }
-        }
-
-        /* Subtle particle drift */
-        @keyframes particleDrift {
-          0%   { transform: translateY(0)   opacity: 0;   }
-          10%  {                            opacity: 0.6; }
-          90%  {                            opacity: 0.4; }
-          100% { transform: translateY(-80px) opacity: 0; }
-        }
-
-        /* Light ray shimmer */
-        @keyframes rayShimmer {
-          0%,100% { opacity: 0.06; }
-          50%     { opacity: 0.14; }
-        }
-
-        /* Slow wordmark pulse */
-        @keyframes orcaWordPulse {
-          0%,100% { text-shadow: 0 0 80px rgba(24,213,208,0.12); }
-          50%     { text-shadow: 0 0 140px rgba(24,213,208,0.28); }
-        }
-      `}</style>
-
-      {/* ── Root: full-screen intro overlay ──────────────────── */}
-      <div
+      {/* 2. ATMOSPHERIC VOLUMETRIC LIGHTING */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
         style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          overflow: 'hidden',
-          // Background precisely matches the darkest pixels in whale.png
-          // so mix-blend-mode:screen erases the photo background seamlessly
-          background: '#030f18',
-          opacity: exiting ? 0 : 1,
-          transition: exiting ? 'opacity 900ms cubic-bezier(0.4,0,0.2,1)' : 'none',
-          pointerEvents: exiting ? 'none' : 'auto',
+          background: 'radial-gradient(ellipse 100% 100% at 50% 0%, rgba(24, 213, 208, 0.08) 0%, transparent 60%)',
+          opacity: showScan ? 1 : 0,
+          transition: 'opacity 2000ms ease-out'
+        }}
+      />
+
+      {/* 3. SCIENTIFIC UI CORNER MARKS */}
+      <div 
+        className="absolute inset-6 pointer-events-none transition-all duration-[2000ms] ease-out"
+        style={{
+          opacity: showScan ? 1 : 0,
+          transform: showScan ? 'scale(1)' : 'scale(1.05)'
         }}
       >
-
-        {/* ── Depth layer 1: deep ocean gradient ── */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse 120% 80% at 50% 30%, #062033 0%, #041422 40%, #030f18 100%)',
-        }} />
-
-        {/* ── Depth layer 2: light shaft from top ── */}
-        {[
-          { left: '38%', width: '3%',  delay: '0s',   skew: '-3deg' },
-          { left: '48%', width: '6%',  delay: '0.4s', skew: '0deg'  },
-          { left: '58%', width: '2.5%',delay: '0.8s', skew: '4deg'  },
-        ].map((r, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            top: 0, left: r.left,
-            width: r.width, height: '65%',
-            background: 'linear-gradient(to bottom, rgba(100,190,240,0.18) 0%, transparent 100%)',
-            transform: `skewX(${r.skew})`,
-            animation: `rayShimmer 4s ease-in-out ${r.delay} infinite`,
-            transformOrigin: 'top center',
-            pointerEvents: 'none',
-          }} />
-        ))}
-
-        {/* ── Depth layer 3: floating particles ── */}
-        {Array.from({ length: 28 }).map((_, i) => (
-          <div key={i} style={{
-            position: 'absolute',
-            left: `${5 + (i * 37) % 90}%`,
-            top:  `${10 + (i * 53) % 75}%`,
-            width:  `${1.5 + (i % 3) * 0.8}px`,
-            height: `${1.5 + (i % 3) * 0.8}px`,
-            borderRadius: '50%',
-            background: `rgba(140,210,240,${0.2 + (i % 4) * 0.12})`,
-            animation: `particleDrift ${4 + (i % 5)}s ease-in-out ${(i * 0.37) % 4}s infinite`,
-            pointerEvents: 'none',
-          }} />
-        ))}
-
-        {/* ── Midground: subtle haze vignette ── */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse 90% 60% at 50% 55%, transparent 30%, rgba(2,10,18,0.55) 100%)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* ══ GIANT ORCA WORDMARK (background typography) ══ */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            fontSize: 'clamp(14vw, 20vw, 22vw)',
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 900,
-            letterSpacing: '0.22em',
-            color: '#0e3548',
-            userSelect: 'none',
-            pointerEvents: 'none',
-            whiteSpace: 'nowrap',
-            opacity: phase >= 1 ? 0.55 : 0,
-            filter: phase >= 1 ? 'blur(0.5px)' : 'blur(6px)',
-            transition: 'opacity 2000ms ease-out, filter 2000ms ease-out',
-            animation: phase >= 1 ? 'orcaWordPulse 5s ease-in-out infinite' : 'none',
-          }}
-        >
-          ORCA
+        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-orca-primary/40" />
+        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-orca-primary/40" />
+        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-orca-primary/40" />
+        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-orca-primary/40" />
+        
+        {/* Coordinates */}
+        <div className="absolute bottom-1 left-12 text-[10px] font-mono tracking-widest text-orca-primary/50">
+          SYS_LOC: 18°58′N 72°49′E
         </div>
+        <div className="absolute bottom-1 right-12 text-[10px] font-mono tracking-widest text-orca-primary/50">
+          DPT: 0842M [ABYSSAL]
+        </div>
+      </div>
 
-        {/* ══ WHALE (foreground subject) ══
-            mix-blend-mode: screen makes the near-black photo background
-            vanish while preserving the bright whale body pixels.
-            The container moves horizontally (swim-in keyframe).
-            The inner image bobs vertically (orcaBob keyframe).
-        */}
-        <div
+      {/* 4. WHALE DETECTION (THE CENTERPIECE) */}
+      <div
+        className="absolute top-1/2 left-1/2 w-[120vw] h-[120vh] max-w-[1200px] max-h-[800px] pointer-events-none"
+        style={{
+          transform: `translate(-50%, -50%)`,
+        }}
+      >
+        <div 
+          className="relative w-full h-full transition-all duration-[4000ms] ease-out"
           style={{
-            position: 'absolute',
-            /* Vertical center: whale body sits slightly below center */
-            top: '50%',
-            /* Horizontal anchor: whale rests at ~42% from left when settled */
-            left: '50%',
-            width: 'clamp(340px, 48vw, 760px)',
-            height: 'clamp(180px, 26vw, 400px)',
-            marginTop: 'clamp(-90px, -13vw, -200px)',
-            marginLeft: 'clamp(-170px, -24vw, -380px)',
-            /* Swim-in: starts off-screen left */
-            animation: phase >= 2
-              ? (exiting
-                  ? 'orcaExitDrift 900ms cubic-bezier(0.4,0,0.6,1) forwards'
-                  : 'orcaSwimIn 1500ms cubic-bezier(0.22,0.58,0.32,1) forwards')
-              : 'none',
-            /* Pre-swim: stay off-screen */
-            transform: phase >= 2 ? undefined : 'translateX(-55vw)',
-            pointerEvents: 'none',
+            // 3D Cinematic Panning
+            transform: showDetect ? 'translate3d(0%, 0, 0) scale(1)' : 'translate3d(-10%, 5%, 0) scale(1.1)',
+            opacity: showDetect ? 1 : 0,
+            filter: showDetect ? 'blur(0px)' : 'blur(20px)',
           }}
         >
-          {/* Inner: continuous bob (separate element so swim + bob compose) */}
-          <div
+          {/* 
+            CRITICAL FIX: Eliminating the rectangular boundary.
+            1. mask-image creates a soft radial fade, making the image 100% transparent at the edges.
+            2. mix-blend-mode: screen mathematically hides any remaining dark pixels against the background.
+          */}
+          <div 
+            className="absolute inset-0"
             style={{
-              width: '100%', height: '100%',
-              animation: phase >= 2 && !exiting
-                ? 'orcaBob 7s ease-in-out 1.4s infinite'
-                : 'none',
+              WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 70%)',
+              maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 70%)',
+              mixBlendMode: 'screen',
             }}
           >
             <Image
               src="/whale.png"
-              alt="Whale swimming through the ocean"
+              alt="ORCA detected"
               fill
               priority
-              sizes="(max-width: 768px) 90vw, 48vw"
               style={{
                 objectFit: 'contain',
-                /* KEY: screen blend erases the black background */
-                mixBlendMode: 'screen',
-                /* Slight brightness boost so the whale pops against the dark scene */
-                filter: 'brightness(1.15) contrast(1.05)',
+                filter: 'brightness(1.2) contrast(1.1)', // Enhance highlights to pop through screen blend
+                // Subtle continuous floating motion
+                animation: 'orca-float 6s ease-in-out infinite alternate'
               }}
             />
           </div>
         </div>
+      </div>
 
-        {/* ══ ORCA BRANDING (mid-level) ══ */}
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          marginTop: 'clamp(80px, 14vw, 180px)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 6,
-          opacity: phase >= 1 ? 1 : 0,
-          transition: 'opacity 1200ms ease-out',
-          pointerEvents: 'none',
-        }}>
-          <div style={{
-            fontSize: 'clamp(10px, 1vw, 13px)',
-            fontWeight: 800,
-            letterSpacing: '0.55em',
-            textTransform: 'uppercase',
-            color: '#18D5D0',
-            fontFamily: "'Inter', sans-serif",
-          }}>
-            ORCA
-          </div>
-          <div style={{
-            width: 32, height: 1,
-            background: 'linear-gradient(to right, transparent, #18D5D0, transparent)',
-          }} />
+      {/* 5. BRAND REVEAL */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        
+        {/* Main Logo Text */}
+        <div 
+          className="relative flex gap-4 md:gap-8 overflow-hidden pt-8 pb-4"
+        >
+          {['O', 'R', 'C', 'A'].map((letter, i) => (
+            <span
+              key={i}
+              className="text-[4rem] md:text-[8rem] font-black text-white leading-none"
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                textShadow: '0 0 40px rgba(24, 213, 208, 0.4)',
+                opacity: showBrand ? 1 : 0,
+                transform: showBrand ? 'translateY(0)' : 'translateY(40px)',
+                filter: showBrand ? 'blur(0px)' : 'blur(10px)',
+                transition: `all 1200ms cubic-bezier(0.16, 1, 0.3, 1) ${i * 150}ms`
+              }}
+            >
+              {letter}
+            </span>
+          ))}
         </div>
 
-        {/* ══ MARINE ECOSYSTEM INTELLIGENCE ══ */}
-        <div style={{
-          position: 'absolute',
-          bottom: 'clamp(80px, 10vh, 130px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          opacity: phase >= 3 ? 1 : 0,
-          transition: 'opacity 800ms ease-out, transform 800ms ease-out',
-          textAlign: 'center',
-          pointerEvents: 'none',
-          whiteSpace: 'nowrap',
-        }}>
-          <div style={{
-            fontSize: 'clamp(11px, 1.1vw, 14px)',
-            fontWeight: 700,
-            letterSpacing: '0.4em',
-            textTransform: 'uppercase',
-            color: '#819CA8',
-            fontFamily: "'Inter', sans-serif",
-          }}>
-            Marine Ecosystem Intelligence
-          </div>
+        {/* Tagline */}
+        <div 
+          className="text-xs md:text-sm font-semibold tracking-[0.5em] text-orca-primary/80 uppercase mt-2"
+          style={{
+            opacity: showBrand ? 1 : 0,
+            transform: showBrand ? 'translateY(0)' : 'translateY(10px)',
+            transition: 'all 1200ms ease-out 800ms'
+          }}
+        >
+          Marine Ecosystem Intelligence
         </div>
+      </div>
 
-        {/* ══ SYSTEM ONLINE ══ */}
-        <div style={{
-          position: 'absolute',
-          bottom: 'clamp(44px, 5.5vh, 72px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          opacity: phase >= 4 ? 1 : 0,
-          transition: 'opacity 500ms ease-out',
-          pointerEvents: 'none',
-          whiteSpace: 'nowrap',
-        }}>
-          <span style={{
-            display: 'inline-block',
-            width: 7, height: 7,
-            borderRadius: '50%',
-            background: '#19D98A',
-            boxShadow: '0 0 8px rgba(25,217,138,0.8)',
-            animation: 'particleDrift 2s ease-in-out infinite', // subtle pulse reuse
-          }} />
-          <span style={{
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: '0.3em',
-            textTransform: 'uppercase',
-            color: '#19D98A',
-            fontFamily: "'Inter', sans-serif",
-          }}>
+      {/* 6. SYSTEM ONLINE (Bottom Center) */}
+      <div 
+        className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none"
+        style={{
+          opacity: showOnline ? 1 : 0,
+          transform: showOnline ? 'translateY(0)' : 'translateY(10px)',
+          transition: 'all 800ms ease-out'
+        }}
+      >
+        <div className="flex items-center gap-3 bg-orca-surface/40 px-4 py-2 rounded-full border border-orca-border/50 backdrop-blur-md">
+          <div className="relative flex items-center justify-center w-2 h-2">
+            <div className="absolute w-full h-full bg-orca-safe rounded-full animate-ping opacity-75" />
+            <div className="relative w-full h-full bg-orca-safe rounded-full shadow-[0_0_10px_rgba(25,217,138,0.8)]" />
+          </div>
+          <span className="text-xs font-bold tracking-[0.3em] text-orca-safe uppercase">
             System Online
           </span>
         </div>
-
+        
+        {/* Decorative Loading Bar */}
+        <div className="w-32 h-[2px] bg-orca-surface overflow-hidden rounded-full">
+          <div className="h-full bg-orca-primary shadow-[0_0_8px_rgba(24,213,208,0.8)] animate-scan-fast" />
+        </div>
       </div>
-    </>
+
+      {/* ANIMATIONS */}
+      <style>{`
+        @keyframes orca-float {
+          0% { transform: translateY(-10px) rotate(-1deg); }
+          100% { transform: translateY(10px) rotate(1deg); }
+        }
+        @keyframes scan-fast {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
+    </div>
   );
 }
