@@ -13,7 +13,11 @@ const NAV_ITEMS = [
   { id: 'reports', label: 'Reports', icon: 'M4 4h16v16H4z M8 12h8' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  status?: 'checking' | 'online' | 'offline';
+}
+
+export default function Sidebar({ status = 'online' }: SidebarProps) {
   return (
     <div className="w-[240px] h-full bg-orca-sidebar flex flex-col border-r border-orca-border shrink-0">
       {/* Branding */}
@@ -29,8 +33,10 @@ export default function Sidebar() {
         </div>
       </div>
       <div className="px-6 pb-6 flex items-center gap-2">
-        <div className="live-dot" />
-        <span className="text-[9px] font-bold text-orca-safe tracking-widest uppercase">System Online</span>
+        <div className={status === 'online' ? "live-dot" : "w-2 h-2 rounded-full bg-red-500"} />
+        <span className={`text-[9px] font-bold tracking-widest uppercase ${status === 'online' ? 'text-orca-safe' : status === 'checking' ? 'text-yellow-500' : 'text-red-500'}`}>
+          {status === 'online' ? 'System Online' : status === 'checking' ? 'Checking' : 'System Offline'}
+        </span>
       </div>
 
       {/* Nav Items */}

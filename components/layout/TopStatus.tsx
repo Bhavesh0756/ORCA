@@ -2,15 +2,26 @@
 
 import React from 'react';
 
-export default function TopStatus() {
+interface TopStatusProps {
+  status?: 'checking' | 'online' | 'offline';
+}
+
+export default function TopStatus({ status = 'online' }: TopStatusProps) {
   return (
     <div className="h-14 border-b border-orca-border flex items-center justify-between px-6 shrink-0 bg-orca-bg">
       {/* Left: View Title */}
       <div className="flex items-center gap-3">
-        <span className="live-dot" />
+        <span className={status === 'online' ? 'live-dot' : 'w-2 h-2 rounded-full bg-red-500'} />
         <div className="flex flex-col">
           <span className="text-[13px] font-bold leading-tight tracking-wider uppercase">
-            <span className="text-orca-safe">Live</span> <span className="text-orca-text">Marine View</span>
+            {status === 'online' ? (
+              <span className="text-orca-safe">Live</span>
+            ) : status === 'checking' ? (
+              <span className="text-yellow-500">Checking</span>
+            ) : (
+              <span className="text-red-500">Offline</span>
+            )}{' '}
+            <span className="text-orca-text">Marine View</span>
           </span>
           <span className="text-[11px] text-orca-muted font-medium">Maharashtra Coastal Region</span>
         </div>
@@ -63,3 +74,4 @@ export default function TopStatus() {
     </div>
   );
 }
+

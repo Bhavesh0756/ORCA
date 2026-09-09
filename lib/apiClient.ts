@@ -1,7 +1,4 @@
 import { MarineZone, EvidenceSource, DataFreshnessItem, ORCAAnalysisResult } from '@/types/marine';
-import { DEMO_ZONES } from '@/data/demoZones';
-import { DEMO_EVIDENCE_SOURCES, DEMO_FRESHNESS_ITEMS } from '@/data/demoEvidence';
-import { runDemoAnalysis } from '@/lib/demoAnalysis';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000/api';
 
@@ -62,7 +59,7 @@ export async function fetchMarineZones(): Promise<MarineZone[]> {
     const data = await res.json();
     return data;
   } catch (err) {
-    return DEMO_ZONES;
+    throw err;
   }
 }
 
@@ -73,7 +70,7 @@ export async function fetchEvidenceSources(): Promise<EvidenceSource[]> {
     const data = await res.json();
     return data;
   } catch (err) {
-    return DEMO_EVIDENCE_SOURCES;
+    throw err;
   }
 }
 
@@ -84,7 +81,7 @@ export async function fetchDataFreshness(): Promise<DataFreshnessItem[]> {
     const data = await res.json();
     return data;
   } catch (err) {
-    return DEMO_FRESHNESS_ITEMS;
+    throw err;
   }
 }
 
@@ -129,36 +126,18 @@ export async function analyzeMarineQuery(
   isDemoMode: boolean = false
 ): Promise<ORCAAnalysisResult> {
   try {
-    const res = await fetch(`${BACKEND_URL}/conversation/message`, {
+    const res = await fetch(`${BACKEND_URL}/query/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: query,
-        session_id: sessionId,
-        language: language,
-        context: context,
-        is_demo_mode: isDemoMode
-      }),
+      body: JSON.stringify({ query }),
       cache: 'no-store'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     return data;
   } catch (err) {
-    console.warn('[ORCA API] Conversation endpoint fallback, trying /agentic/query:', err);
-    try {
-      const res2 = await fetch(`${BACKEND_URL}/agentic/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, context, is_demo_mode: isDemoMode }),
-        cache: 'no-store'
-      });
-      if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
-      return await res2.json();
-    } catch (err2) {
-      console.warn('[ORCA API] Running deterministic client fallback:', err2);
-      return runDemoAnalysis(query);
-    }
+    console.error('[ORCA API] /query/analyze failed:', err);
+    throw err;
   }
 }
 
@@ -172,40 +151,7 @@ export async function fetchActiveAlerts(): Promise<{ alerts: any[]; unread_count
       unread_count: data.unread_count || 0
     };
   } catch (err) {
-    console.warn('[ORCA API] Alerts endpoint unreachable:', err);
-    return {
-      alerts: [
-        {
-          alert_id: 'alert_zone_a_wave',
-          severity: 'HIGH',
-          title: 'ZONE A: High Wave & Swell Advisory',
-          zone_id: 'zone-a',
-          zone_code: 'ZONE A',
-          message: 'Significant wave height 4.1 m exceeds small-craft safety threshold.',
-          value: '4.1 m',
-          source_name: 'INCOIS Wave Watch III',
-          source_url: 'https://incois.gov.in/oceanservices/osfforecast.jsp',
-          valid_time: 'Tomorrow 06:00 IST',
-          created_at: '05 Sep 2026 06:00 IST',
-          acknowledged: false
-        },
-        {
-          alert_id: 'alert_zone_b_geofence',
-          severity: 'WARNING',
-          title: 'ZONE B: Naval Security Cadastre Restriction',
-          zone_id: 'zone-b',
-          zone_code: 'ZONE B',
-          message: 'Zone intersects restricted defense boundary.',
-          value: 'Naval Security Buffer',
-          source_name: 'National Hydrographic Cadastre',
-          source_url: 'https://hydro-india.nic.in/',
-          valid_time: 'Official Gazette 2026.1',
-          created_at: '05 Sep 2026 06:00 IST',
-          acknowledged: false
-        }
-      ],
-      unread_count: 2
-    };
+    throw err;
   }
 }
 

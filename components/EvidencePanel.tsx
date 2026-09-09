@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { EvidenceSource } from '@/types/marine';
-import { DEMO_EVIDENCE_SOURCES } from '@/data/demoEvidence';
 import { ViewSourceLink } from './ViewSourceLink';
 import { ExternalLink } from 'lucide-react';
 
@@ -25,10 +24,10 @@ const freshnessStyle: Record<string, string> = {
 };
 
 export const EvidencePanel: React.FC<EvidencePanelProps> = ({
-  sources = DEMO_EVIDENCE_SOURCES,
+  sources = [],
   onInspectEvidence,
 }) => {
-  const activeSources = sources && sources.length > 0 ? sources : DEMO_EVIDENCE_SOURCES;
+  const activeSources = sources || [];
 
   return (
     <div

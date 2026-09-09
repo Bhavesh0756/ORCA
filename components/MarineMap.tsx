@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { MarineZone } from '@/types/marine';
-import { DEMO_ZONES } from '@/data/demoZones';
 import { MAP_CONFIG } from '@/lib/mapConfig';
 import { MapLegend } from './MapLegend';
 import { RotateCcw, ZoomIn, ZoomOut, Layers } from 'lucide-react';
@@ -16,7 +15,7 @@ interface MarineMapProps {
 }
 
 export const MarineMap: React.FC<MarineMapProps> = ({
-  zones = DEMO_ZONES,
+  zones = [],
   selectedZone,
   onSelectZone,
   filterMode = 'all',
@@ -99,7 +98,7 @@ export const MarineMap: React.FC<MarineMapProps> = ({
       layersRef.current = {};
 
       const layerGroup = L.layerGroup();
-      const activeZoneList = zones && zones.length > 0 ? zones : DEMO_ZONES;
+      const activeZoneList = zones || [];
 
       activeZoneList.forEach((zone) => {
         let isVisible = true;

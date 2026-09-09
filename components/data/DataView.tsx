@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { EvidenceSource, DataFreshnessItem } from '@/types/marine';
-import { DEMO_EVIDENCE_SOURCES, DEMO_FRESHNESS_ITEMS } from '@/data/demoEvidence';
 
 interface DataViewProps {
   sources?: EvidenceSource[];
@@ -19,9 +18,9 @@ const sourceConfig: Record<string, { abbr: string; color: string }> = {
   'GIS':      { abbr: 'GI', color: '#FFB52E' },
 };
 
-export default function DataView({ sources = DEMO_EVIDENCE_SOURCES, freshnessItems = DEMO_FRESHNESS_ITEMS, onInspectEvidence }: DataViewProps) {
-  const activeSources = sources?.length ? sources : DEMO_EVIDENCE_SOURCES;
-  const activeItems   = freshnessItems?.length ? freshnessItems : DEMO_FRESHNESS_ITEMS;
+export default function DataView({ sources = [], freshnessItems = [], onInspectEvidence }: DataViewProps) {
+  const activeSources = sources || [];
+  const activeItems = freshnessItems || [];
 
   return (
     <div className="min-h-screen pt-24 pb-24 px-6" style={{ background: '#07141D' }}>

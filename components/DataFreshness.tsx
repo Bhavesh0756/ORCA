@@ -1,6 +1,5 @@
 import React from 'react';
 import { DataFreshnessItem } from '@/types/marine';
-import { DEMO_FRESHNESS_ITEMS } from '@/data/demoEvidence';
 import { Clock } from 'lucide-react';
 
 interface DataFreshnessProps {
@@ -20,9 +19,9 @@ const natureColor: Record<string, string> = {
 };
 
 export const DataFreshness: React.FC<DataFreshnessProps> = ({
-  items = DEMO_FRESHNESS_ITEMS,
+  items = [],
 }) => {
-  const activeItems = items && items.length > 0 ? items : DEMO_FRESHNESS_ITEMS;
+  const activeItems = items || [];
 
   return (
     <div

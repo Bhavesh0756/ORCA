@@ -9,25 +9,44 @@ import QueryResponseOverlay from '@/components/reasoning/QueryResponseOverlay';
 import OrcaEntryAnimation from '@/components/intro/OrcaEntryAnimation';
 import dynamic from 'next/dynamic';
 import { MarineZone, ORCAAnalysisResult } from '@/types/marine';
-import { DEMO_ZONES } from '@/data/demoZones';
-import { analyzeMarineQuery } from '@/lib/apiClient';
+import { analyzeMarineQuery, fetchMarineZones, fetchSystemReadiness } from '@/lib/apiClient';
 
 const OceanMap = dynamic(() => import('@/components/map/OceanMap'), { ssr: false });
 
 export default function AppWorkspace() {
-  const [zones, setZones] = useState<MarineZone[]>(DEMO_ZONES);
+  const [zones, setZones] = useState<MarineZone[]>([]);
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [selectedZone, setSelectedZone] = useState<MarineZone | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [queryResult, setQueryResult] = useState<ORCAAnalysisResult | null>(null);
   const [introState, setIntroState] = useState<'playing' | 'done'>('done');
 
-  // Load existing zones on mount if possible, or stick to DEMO
   useEffect(() => {
-    // In a real app we'd fetchMarineZones() here
+    let isMounted = true;
+    async function loadData() {
+      try {
+        const health = await fetchSystemReadiness();
+        if (health && health.status !== 'NOT_READY') {
+          if (isMounted) setBackendStatus('online');
+        } else {
+          if (isMounted) setBackendStatus('offline');
+        }
+        
+        const fetchedZones = await fetchMarineZones();
+        if (isMounted) setZones(fetchedZones || []);
+      } catch (err) {
+        console.error('Failed to load initial data:', err);
+        if (isMounted) setBackendStatus('offline');
+      }
+    }
+    loadData();
+
     const hasPlayed = sessionStorage.getItem('orca_intro_played');
     if (!hasPlayed) {
       setIntroState('playing');
     }
+    
+    return () => { isMounted = false; };
   }, []);
 
   const handleIntroComplete = () => {
@@ -41,7 +60,7 @@ export default function AppWorkspace() {
     setIsAnalyzing(true);
     setQueryResult(null); // Clear previous result while loading
     try {
-      const result = await analyzeMarineQuery(query, 'session_1', 'en', null, true); // use demo mode for now to ensure fast response
+      const result = await analyzeMarineQuery(query, 'session_1', 'en', null, false);
       if (result.all_zones) {
         setZones(result.all_zones);
       }
@@ -76,7 +95,7 @@ export default function AppWorkspace() {
         
         {/* LEFT: Sidebar */}
         <div className={`transition-all duration-[1200ms] ease-out ${isInitial ? '-translate-x-12 opacity-0' : 'translate-x-0 opacity-100'} z-20`}>
-          <Sidebar />
+          <Sidebar status={backendStatus} />
         </div>
 
         {/* RIGHT: Main Workspace Column */}
@@ -84,7 +103,7 @@ export default function AppWorkspace() {
           
           {/* TOP: Slim Status Header */}
           <div className={`transition-all duration-[1000ms] ease-out delay-100 ${isInitial ? '-translate-y-4 opacity-0' : 'translate-y-0 opacity-100'} z-20`}>
-            <TopStatus />
+            <TopStatus status={backendStatus} />
           </div>
 
           {/* BOTTOM: Map & Analysis */}

@@ -63,10 +63,17 @@ export default function OceanMap({ zones, selectedZone, onSelectZone, isAnalyzin
         attributionControl: false,
       });
 
-      /* Esri World Topographic Map — premium light basemap with pale cyan water, soft green parks, and light gray land. Free, no API key required */
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+      /* Esri World Ocean Base — Deep bathymetry, natural terrain, vegetation, and realistic coastline */
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
+        maxNativeZoom: 13, // Prevents missing tile errors when zoomed in deep
+        attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri',
+      }).addTo(map);
+
+      /* Esri World Ocean Reference — Marine labels, ports, cities, and shipping-like reference data */
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        maxNativeZoom: 13,
       }).addTo(map);
 
       map.on('click', () => onSelectZone(null));

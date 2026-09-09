@@ -48,6 +48,7 @@ export default function AskOrcaBar({ onAnalyze, isAnalyzing }: AskOrcaBarProps) 
             onChange={e => setInput(e.target.value)}
             disabled={isAnalyzing}
             placeholder="Search or ask ORCA..."
+            autoComplete="off"
             className="w-full bg-orca-bg border border-orca-border rounded-lg py-3 pl-10 pr-24 text-[13px] font-medium text-orca-text focus:outline-none focus:border-orca-primary/50 transition-colors placeholder:text-orca-muted/60"
           />
           <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center">

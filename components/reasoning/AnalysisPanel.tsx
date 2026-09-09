@@ -132,23 +132,31 @@ export default function AnalysisPanel({ zone, isAnalyzing }: AnalysisPanelProps)
             </div>
           </div>
 
-          {/* WHY THIS ZONE IS RISKY */}
+          {/* WHY THIS ZONE WAS SELECTED / RISKY */}
           <div className="border-b border-orca-border pb-6">
-            <div className="text-[10px] font-bold text-orca-muted uppercase tracking-widest mb-3">Why This Zone Is Risky</div>
+            <div className="text-[10px] font-bold text-orca-muted uppercase tracking-widest mb-3">
+              {zone.status === 'high_risk' || zone.status === 'caution' ? 'Why This Zone Is Risky' : 'Zone Analysis'}
+            </div>
             <p className="text-[13px] text-orca-text leading-relaxed">
-              {zone.reasons?.[0] || 'Strong winds and elevated wave conditions are increasing operational risk in this area.'}
+              {zone.reasons?.[0] || 'Detailed analysis is currently unavailable for this zone.'}
             </p>
           </div>
 
           {/* ORCA ADVISORY & RECOMMENDATION */}
           <div className="border-b border-orca-border pb-6">
-             <div className="text-[10px] font-bold text-orca-risk uppercase tracking-widest mb-3">ORCA Advisory</div>
+             <div className={`text-[10px] font-bold uppercase tracking-widest mb-3 ${
+                zone.status === 'high_risk' ? 'text-orca-risk' : 
+                zone.status === 'caution' ? 'text-orca-warning' : 
+                'text-orca-safe'
+             }`}>ORCA Advisory</div>
              <p className="text-[14px] font-medium text-orca-text mb-5">
-                Avoid operations in {zone.code} during the current forecast window.
+                {zone.status === 'high_risk' || zone.status === 'restricted' 
+                  ? `Avoid operations in ${zone.code} during the current forecast window.` 
+                  : `Conditions in ${zone.code} are generally suitable for operations.`}
              </p>
              <div className="text-[10px] font-bold text-orca-muted uppercase tracking-widest mb-2">Recommendation</div>
              <p className="text-[13px] text-orca-muted">
-                {zone.recommendation || 'Consider alternative suitable zones for operations.'}
+                {zone.recommendation || 'No specific recommendation provided.'}
              </p>
           </div>
 
@@ -156,9 +164,9 @@ export default function AnalysisPanel({ zone, isAnalyzing }: AnalysisPanelProps)
           <div className="pb-2">
              <div className="flex justify-between items-center mb-1.5">
                 <span className="text-[10px] font-bold text-orca-muted uppercase tracking-widest">Confidence</span>
-                <span className="text-[13px] font-bold text-orca-text">92%</span>
+                <span className="text-[13px] font-bold text-orca-text">{zone.confidence || 'N/A'}</span>
              </div>
-             <div className="text-[10px] text-orca-muted/60">Sources: Weather • Ocean • Geospatial</div>
+             <div className="text-[10px] text-orca-muted/60">Sources: {zone.dataSourceSummary || 'Weather • Ocean • Geospatial'}</div>
           </div>
 
         </div>
